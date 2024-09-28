@@ -1,7 +1,15 @@
 Fronted/FramePrincipal$2.class
-Fronted/FramePrincipal$5.class
+Backend/TokenDeEstado.class
 Fronted/FramePrincipal$1.class
+Backend/CSS/TokensCSS.class
 Fronted/FramePrincipal$3.class
-com/mycompany/analizadorlexico/lenguajes/AnalizadorLexicoLenguajes.class
 Fronted/FramePrincipal$4.class
 Fronted/FramePrincipal.class
+Fronted/FramePrincipal$5.class
+Backend/HTML/TokensHTML.class
+Backend/LectorTexto.class
+Backend/CSS/AnalizadorCSS.class
+Backend/HTML/AnalizadorHTML.class
+Backend/JS/AnalizadorJS.class
+Backend/HTML/TraductorHTML.class
+com/mycompany/analizadorlexico/lenguajes/AnalizadorLexicoLenguajes.class
