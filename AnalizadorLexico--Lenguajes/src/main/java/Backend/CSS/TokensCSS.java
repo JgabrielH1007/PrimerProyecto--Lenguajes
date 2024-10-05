@@ -9,8 +9,7 @@ package Backend.CSS;
  * @author gabrielh
  */
 public class TokensCSS {
-    private String token;
-    private boolean tokenAceptado;
+    private String texto;
     private final String[] ETIQUETAS = {"body","header","main","nav","aside","div","ul","ol","li","a","h1"
     ,"h2","h3","h4","h5","h6","p","span","label","textarea","button","section","article","footer"};
     private final String[] COMBINADORES = {">","+"," "};
@@ -20,26 +19,48 @@ public class TokensCSS {
     "position","static","relative","absolute","sticky","fixed","top","bottom","left","right","z-index","justify-content","align-items","border-radius","auto",
     "float","list-style","text-align","box-shadow"};
     private final String[] OTROS = {"px","%","rem","em","vw","vh",":hover",":active",":not()",":nth-child()","odd","even","::before","::after",
-    ":",";",",","(",")"};
+    ":",";",",","(",")","{","}","[","]"};
+    private final String LENGUAJE = "CSS";
+    private String expresionRegular;
+    private String tipo;
+    private int fila;
+    private int columna;
+    private final String UNIVERSAL= "*";
     
-    
-    public boolean isTokenAceptado() {
-        return tokenAceptado;
+    public boolean esEtiqueta(String cadena) {
+        return verificarCadenaEnArreglo(cadena, ETIQUETAS);
     }
 
-    public void setTokenAceptado(boolean tokenAceptado) {
-        this.tokenAceptado = tokenAceptado;
-    }
-    
-    public String getToken() {
-        return token;
+    public boolean esRegla(String cadena) {
+        return verificarCadenaEnArreglo(cadena, REGLAS);
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public boolean esCombinador(String cadena) {
+        return verificarCadenaEnArreglo(cadena, COMBINADORES);
     }
 
-    public boolean tokenClase(String token) {
+    public boolean esOtro(String cadena) {
+        return verificarCadenaEnArreglo(cadena, OTROS);
+    }
+
+    private boolean verificarCadenaEnArreglo(String cadena, String[] arreglo) {
+        for (String elemento : arreglo) {
+            if (elemento.equals(cadena)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public String getTexto() {
+        return texto;
+    }
+
+    public void setTexto(String texto) {
+        this.texto = texto;
+    }
+
+    public boolean esClase(String token) {
         if (token == null || token.isEmpty() || token.charAt(0) != '.') {
             return false;  // Si el token es nulo, vacío o no empieza con punto, es inválido
         }
@@ -71,16 +92,16 @@ public class TokensCSS {
         return true;  // Si pasa todas las verificaciones, es válido
     }
 
-    private boolean isLowerCaseLetter(char c) {
+    public boolean isLowerCaseLetter(char c) {
         return c >= 'a' && c <= 'z';
     }
 
     // Método auxiliar para verificar si un carácter es un dígito [0-9]
-    private boolean isDigit(char c) {
+    public boolean isDigit(char c) {
         return c >= '0' && c <= '9';
     }
     
-    public boolean tokenId(String token) {
+    public boolean esId(String token) {
         if (token == null || token.isEmpty() || token.charAt(0) != '#') {
             return false;  // Si el token es nulo, vacío o no empieza con '#', es inválido
         }
@@ -114,7 +135,7 @@ public class TokensCSS {
         return true; 
     }
     
-    public boolean tokenCadena(String token) {
+    public boolean esCadena(String token) {
         if (token == null || token.length() < 2) {
             return false;  
         }
@@ -132,7 +153,7 @@ public class TokensCSS {
         return false;  // Si no empieza o no termina con comillas simples
     }
     
-    public boolean tokenColor(String token) {
+    public boolean esColor(String token) {
         if (token == null || token.isEmpty()) {
             return false;  // Si el token es nulo o vacío, es inválido
         }
@@ -185,14 +206,14 @@ public class TokensCSS {
 
         // Verificar que los primeros tres valores sean enteros entre 0 y 255
         for (int i = 0; i < 3; i++) {
-            if (!isValidInteger(parts[i].trim(), 0, 255)) {
+            if (!isValidInteger(parts[i].trim())) {
                 return false;  // Valor inválido
             }
         }
 
         // Si hay un cuarto valor, verificar que sea un número entre 0 y 1
         if (parts.length == 4) {
-            if (!isValidFloat(parts[3].trim(), 0, 1)) {
+            if (!isValidFloat(parts[3].trim())) {
                 return false;  // Valor alfa inválido
             }
         }
@@ -200,25 +221,25 @@ public class TokensCSS {
         return true;  // Si todos los valores son válidos
     }
 
-    private boolean isValidInteger(String str, int min, int max) {
+    private boolean isValidInteger(String str) {
         try {
             int value = Integer.parseInt(str);
-            return value >= min && value <= max;
+            return value >= 0;
         } catch (NumberFormatException e) {
             return false;  // No es un número entero válido
         }
     }
 
-    private boolean isValidFloat(String str, double min, double max) {
+    private boolean isValidFloat(String str) {
         try {
             double value = Double.parseDouble(str);
-            return value >= min && value <= max;
+            return value >= 0;
         } catch (NumberFormatException e) {
             return false;  // No es un número flotante válido
         }
     }
     
-    public boolean tokenIdentificador(String token) {
+    public boolean esIdentificador(String token) {
         if (token == null || token.isEmpty()) {
             return false;  // Si el token es nulo o vacío, es inválido
         }
@@ -265,6 +286,46 @@ public class TokensCSS {
         return true;
     }
 
+    public String getExpresionRegular() {
+        return expresionRegular;
+    }
+
+    public void setExpresionRegular(String expresionRegular) {
+        this.expresionRegular = expresionRegular;
+    }
+
+    public String getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
+    }
+
+    public int getFila() {
+        return fila;
+    }
+
+    public void setFila(int fila) {
+        this.fila = fila;
+    }
+
+    public int getColumna() {
+        return columna;
+    }
+
+    public void setColumna(int columna) {
+        this.columna = columna;
+    }
+
+    public String getLENGUAJE() {
+        return LENGUAJE;
+    }
+
+    public String getUNIVERSAL() {
+        return UNIVERSAL;
+    }
+    
 }
 
 

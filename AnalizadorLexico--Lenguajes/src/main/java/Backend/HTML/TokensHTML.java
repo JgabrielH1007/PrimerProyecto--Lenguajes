@@ -19,7 +19,15 @@ public class TokensHTML {
     "area", "boton", "piepagina"};
     private final String[] PALABRAS_RESERVADAS = {"class", "=", "href", "onClick", "id", "style", "type", "placeholder", 
     "required", "name"};
-
+    private String texto;
+    private final String LENGUAJE = "Html";
+    private String expresionRegular;
+    private String tipo;
+    private int fila;
+    private int columna;
+    
+    
+    
     // Método para verificar si un token de cadena es válido
     public boolean tokenCadena(String token) {
         if (token == null || token.length() < 2) {
@@ -38,48 +46,49 @@ public class TokensHTML {
         return false;
     }
 
-    // Método para verificar si el token es válido
     public boolean esTokenValido(String token) {
         if (token == null || token.length() < 3) {
             return false;
         }
 
+        // Validar si el token tiene apertura y cierre "< >"
         if (!(token.startsWith(APERTURA) && token.endsWith(CIERRE))) {
             return false;
         }
 
+        // Remover "<" y ">" para obtener el contenido del token
         String contenido = token.substring(1, token.length() - 1).trim();
 
-        // Si el contenido comienza con '/', verificar si es un token de cierre
+        // Si el contenido comienza con '/', es un token de cierre
         boolean esCierre = contenido.startsWith(BARRACIERRE);
         if (esCierre) {
             contenido = contenido.substring(1).trim();  // Eliminar el '/'
         }
 
+        // Dividir el contenido en partes separadas por espacios
         String[] partes = contenido.split("\\s+");
-        
-        // Validar que la primera parte del token sea un nombre de contenido válido
+
+        // La primera parte debe ser el nombre de la etiqueta, que debe ser válido
         if (!esContenidoValido(partes[0])) {
             return false;
         }
 
-        // Si es un token de cierre (por ejemplo, </contenedor>), la longitud de partes debe ser 1
+        // Si es un token de cierre (por ejemplo, </contenedor>), debe tener solo el nombre de la etiqueta
         if (esCierre && partes.length == 1) {
             return true;
         }
 
-        // Validar las partes adicionales como palabras reservadas y valores de atributos
-        for (int i = 1; i < partes.length; i += 3) {
-            if (i + 2 >= partes.length) {
-                return false;  // Atributos incompletos (ej. falta valor o igual)
+        // Validar las partes adicionales como atributos (ejemplo: class="container")
+        for (int i = 1; i < partes.length; i++) {
+            String[] atributo = partes[i].split("=");
+
+            // Un atributo válido tiene la forma nombre="valor"
+            if (atributo.length != 2 || !esPalabraReservada(atributo[0])) {
+                return false;
             }
 
-            String palabraReservada = partes[i];
-            String igual = partes[i + 1];
-            String valor = partes[i + 2];
-
-            // Validar palabra reservada, el signo igual y que el valor sea una cadena válida
-            if (!esPalabraReservada(palabraReservada) || !igual.equals("=") || !tokenCadena(valor)) {
+            // El valor del atributo debe ser una cadena válida (ejemplo: "container")
+            if (!tokenCadena(atributo[1])) {
                 return false;
             }
         }
@@ -106,22 +115,30 @@ public class TokensHTML {
         }
         return false;
     }
-    
+
+    // Verificar si un texto es válido (sin '<' o '>')
     public boolean esTextoValido(String texto) {
-        if (texto == null || texto.isEmpty()) {
+        if (texto == null || texto.trim().isEmpty()) {
             return false;
         }
 
-        // Verificar que no contenga los caracteres '<' o '>'
         for (char c : texto.toCharArray()) {
             if (c == '<' || c == '>') {
                 return false;
             }
         }
-
         return true;
     }
 
+    public String getTexto() {
+        return texto;
+    }
 
+    public void setTexto(String texto) {
+        this.texto = texto;
+    }
+    
+    
+    
 }
 

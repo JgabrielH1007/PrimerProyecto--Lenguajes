@@ -3,6 +3,7 @@ Backend/TokenDeEstado.class
 Fronted/FramePrincipal$1.class
 Backend/CSS/TokensCSS.class
 Fronted/FramePrincipal$3.class
+Backend/TokenErrado.class
 Fronted/FramePrincipal$4.class
 Fronted/FramePrincipal.class
 Fronted/FramePrincipal$5.class
@@ -12,4 +13,5 @@ Backend/CSS/AnalizadorCSS.class
 Backend/HTML/AnalizadorHTML.class
 Backend/JS/AnalizadorJS.class
 Backend/HTML/TraductorHTML.class
+Backend/JS/TokensJS.class
 com/mycompany/analizadorlexico/lenguajes/AnalizadorLexicoLenguajes.class
