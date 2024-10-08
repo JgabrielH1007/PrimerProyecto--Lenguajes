@@ -9,8 +9,10 @@ import Backend.HTML.TokensHTML;
 import Backend.JS.TokensJS;
 import Exceptions.ExceptionToken;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -22,7 +24,12 @@ public class Optimizador {
     private List<TokensCSS> listaTokensCss;
     private List<TokensJS> listaTokensJS;
     private TokenDeEstado tokenE = new TokenDeEstado();
-    private String prueba;
+    private String html;
+    private String css;
+    private String js;
+    private List<String> htmlList = new ArrayList<>();
+    private List<String> cssList = new ArrayList<>();
+    private List<String> jsList = new ArrayList<>();
 
     public Optimizador() {
         listaTokensHtml = new ArrayList<>();
@@ -31,23 +38,29 @@ public class Optimizador {
 
     }
 
-    public String optimizarTexto(String contenido) throws ExceptionToken {
+    public Map<String, List<String>> optimizarTexto(String contenido) throws ExceptionToken {
+        // Inicializar las listas
+        htmlList.clear();
+        cssList.clear();
+        jsList.clear();
+
         String[] lineas = contenido.split("\n");
         StringBuilder contenidoActual = new StringBuilder();
         String tokenActual = "";
 
         for (String linea : lineas) {
             String lineaSinEspacios = linea.trim();
+
             if (linea.contains(tokenE.getTOKENHTML())) {
-                enviarAlAnalizador(tokenActual, contenidoActual.toString());
+                enviarAOptimizar(tokenActual, contenidoActual.toString());
                 contenidoActual.setLength(0);
                 tokenActual = tokenE.getTOKENHTML();
             } else if (linea.contains(tokenE.getTOKENCSS())) {
-                enviarAlAnalizador(tokenActual, contenidoActual.toString());
+                enviarAOptimizar(tokenActual, contenidoActual.toString());
                 contenidoActual.setLength(0);
                 tokenActual = tokenE.getTOKENCSS();
             } else if (linea.contains(tokenE.getTOKENJAVASCRIPT())) {
-                enviarAlAnalizador(tokenActual, contenidoActual.toString());
+                enviarAOptimizar(tokenActual, contenidoActual.toString());
                 contenidoActual.setLength(0);
                 tokenActual = tokenE.getTOKENJAVASCRIPT();
             } else {
@@ -55,81 +68,96 @@ public class Optimizador {
                 contenidoActual.append(linea).append("\n");
             }
         }
+        // Optimizar el último bloque si existe
+        enviarAOptimizar(tokenActual, contenidoActual.toString());
 
-        // Imprimir los tokens eliminados
-        return optimizarHTML(contenidoActual.toString());
+        // Crear un mapa para retornar las listas con el contenido acumulado
+        Map<String, List<String>> resultado = new HashMap<>();
+        resultado.put("html", htmlList);
+        resultado.put("css", cssList);
+        resultado.put("js", jsList);
+
+        return resultado;
     }
 
-    private void enviarAlAnalizador(String token, String contenido) throws ExceptionToken {
+    private void enviarAOptimizar(String token, String contenido) throws ExceptionToken {
         if (contenido.isEmpty()) {
             return; // No enviar si el contenido está vacío
         }
         switch (token) {
             case ">>[html]":
-                prueba = optimizarHTML(contenido); // Acumular el contenido traducido
+                htmlList.add(optimizarHTML(contenido)); // Añadir el contenido optimizado a la lista HTML
                 break;
             case ">>[css]":
+                cssList.add(optimizarCss(contenido)); // Añadir el contenido optimizado a la lista CSS
                 break;
             case ">>[js]":
+                jsList.add(optimizarJs(contenido)); // Añadir el contenido optimizado a la lista JS
                 break;
             default:
-                // Si no hay un token válido, no se realiza ninguna acción
                 break;
         }
     }
 
     // Método principal para optimizar el contenido HTML
     public String optimizarHTML(String contenido) throws ExceptionToken {
-        // Almacena cada token válido o erróneo que se encuentre
         List<String> tokensBorrados = new ArrayList<>();
         StringBuilder contenidoOptimizado = new StringBuilder(); // Acumular el contenido optimizado
-
-        // El token de estado a preservar (modificar según el formato de estado)
-        String tokenEstado = ">>[html]"; // Token de estado que no se debe eliminar
-
-        // Almacena todas las líneas del contenido original separadas por salto de línea
+        String tokenEstado = ">>[html]";
         String[] lineas = contenido.split("\n");
 
-        // Iterar a través de cada línea para procesarla
+        // Agregar siempre el token de estado al inicio del contenido optimizado
+        contenidoOptimizado.append(tokenEstado).append("\n");
+
         for (String linea : lineas) {
             String lineaTrim = linea.trim(); // Remover espacios al inicio y final para identificar mejor
 
             // Preservar el token de estado si es encontrado
             if (lineaTrim.equals(tokenEstado)) {
-                contenidoOptimizado.append(lineaTrim).append("\n");
                 continue; // No procesar más esta línea, simplemente agregarla
             }
 
-            // Saltar la línea completa si contiene un comentario "//" (eliminar línea completa)
             if (lineaTrim.contains("//")) {
                 // Dividir la línea en tokens antes de eliminarla
                 guardarTokensSeparados(lineaTrim, tokensBorrados);
                 continue; // Omitir esta línea y pasar a la siguiente
             }
 
-            // Agregar la línea al contenido optimizado si no está vacía
             if (!lineaTrim.isEmpty()) {
                 contenidoOptimizado.append(linea).append("\n"); // Conservar la estructura original (indentación)
             }
         }
 
-        // Procesar cada token borrado según las reglas de la clase TokensHTML
         for (String tokenBorrado : tokensBorrados) {
             TokensHTML tokenObjeto = new TokensHTML(); // Crear un nuevo objeto TokensHTML para cada token
-            tokenObjeto.setTexto(tokenBorrado); // Asignar el token borrado al objeto
-            listaTokensHtml.add(tokenObjeto); // Agregarlo a la lista de tokens eliminados
+            if (tokenObjeto.esTokenValido(tokenBorrado)) {
+                tokenObjeto.setTexto(tokenBorrado);
+                tokenObjeto.setTipo("Token Html");
+                listaTokensHtml.add(tokenObjeto);
+            } else if (tokenObjeto.esComentario(tokenBorrado)) {
+                tokenObjeto.setTexto(tokenBorrado);
+                tokenObjeto.setTipo("Comentario");
+                listaTokensHtml.add(tokenObjeto);
+            } else if (tokenObjeto.esTextoValido(tokenBorrado)) {
+                tokenObjeto.setTexto(tokenBorrado);
+                tokenObjeto.setTipo("Texto");
+                listaTokensHtml.add(tokenObjeto);
+            } else if (!tokenBorrado.isEmpty()) {
+                tokenObjeto.setTexto(tokenBorrado);
+                tokenObjeto.setTipo("Invalido");
+                listaTokensHtml.add(tokenObjeto);
+            } // Agregarlo a la lista de tokens eliminados
         }
 
         // Imprimir el contenido de la lista de tokens borrados
         for (TokensHTML token : listaTokensHtml) {
-            System.out.println("Token borrado: " + token.getTexto());
+            System.out.println("Token borrado: " + token.getTexto() + token.getTipo());
         }
 
         // Retornar el contenido optimizado como String
         return contenidoOptimizado.toString();
     }
 
-    // Método para separar y guardar los tokens de una línea
     private void guardarTokensSeparados(String linea, List<String> tokensBorrados) {
         StringBuilder tokenActual = new StringBuilder();
         boolean dentroDeEtiqueta = false;
@@ -138,7 +166,6 @@ public class Optimizador {
         for (int i = 0; i < linea.length(); i++) {
             char caracterActual = linea.charAt(i);
 
-            // Detectar inicio de comentario
             if (!dentroDeEtiqueta && caracterActual == '/' && i + 1 < linea.length() && linea.charAt(i + 1) == '/') {
                 if (tokenActual.length() > 0) {
                     tokensBorrados.add(tokenActual.toString().trim()); // Guardar el contenido antes del comentario
@@ -152,7 +179,6 @@ public class Optimizador {
                 continue;
             }
 
-            // Detectar inicio y fin de etiqueta HTML
             if (caracterActual == '<') {
                 dentroDeEtiqueta = true;
                 if (tokenActual.length() > 0) {
@@ -171,10 +197,288 @@ public class Optimizador {
             tokenActual.append(caracterActual);
         }
 
-        // Guardar el token restante si es un comentario o un texto
         if (tokenActual.length() > 0) {
             tokensBorrados.add(tokenActual.toString().trim());
         }
+    }
+
+    public String optimizarCss(String contenido) throws ExceptionToken {
+        List<String> tokensBorrados = new ArrayList<>();
+        StringBuilder contenidoOptimizado = new StringBuilder(); // Acumular el contenido optimizado
+        String tokenEstado = ">>[css]";
+        String[] lineas = contenido.split("\n");
+
+        // Agregar siempre el token de estado al inicio del contenido optimizado
+        contenidoOptimizado.append(tokenEstado).append("\n");
+
+        for (String linea : lineas) {
+            String lineaTrim = linea.trim(); // Remover espacios al inicio y final para identificar mejor
+
+            // Saltar el token de estado si se encuentra en las líneas
+            if (lineaTrim.equals(tokenEstado)) {
+                continue; // No procesar más esta línea, simplemente ignorarla
+            }
+
+            // Manejo de comentarios CSS con //
+            if (lineaTrim.contains("//")) {
+                // Dividir la línea en tokens antes de eliminarla
+                guardarTokensSeparadosCSS(lineaTrim, tokensBorrados);
+                continue; // Omitir esta línea y pasar a la siguiente
+            }
+
+            // Si la línea no está vacía, agregarla al contenido optimizado
+            if (!lineaTrim.isEmpty()) {
+                contenidoOptimizado.append(linea).append("\n"); // Conservar la estructura original (indentación)
+            }
+        }
+
+        // Procesar los tokens eliminados y clasificarlos
+        for (String tokenBorrado : tokensBorrados) {
+            TokensCSS tokenCSS = new TokensCSS(); // Crear un nuevo objeto TokensCSS para cada token
+            char caracterDigito = tokenBorrado.charAt(0); // Obtener el primer carácter para detectar dígitos
+
+            if (tokenCSS.esEtiqueta(tokenBorrado)) {
+                tokenCSS.setTexto(tokenBorrado);
+                tokenCSS.setTipo("Etiqueta");
+                listaTokensCss.add(tokenCSS);
+            } else if (tokenCSS.esClase(tokenBorrado)) {
+                tokenCSS.setTexto(tokenBorrado);
+                tokenCSS.setTipo("Clase");
+                listaTokensCss.add(tokenCSS);
+            } else if (tokenCSS.esId(tokenBorrado)) {
+                tokenCSS.setTexto(tokenBorrado);
+                tokenCSS.setTipo("Id");
+                listaTokensCss.add(tokenCSS);
+            } else if (tokenCSS.esRegla(tokenBorrado)) {
+                tokenCSS.setTexto(tokenBorrado);
+                tokenCSS.setTipo("Regla");
+                listaTokensCss.add(tokenCSS);
+            } else if (tokenCSS.esColor(tokenBorrado)) {
+                tokenCSS.setTexto(tokenBorrado);
+                tokenCSS.setTipo("Color");
+                listaTokensCss.add(tokenCSS);
+            } else if (tokenCSS.esCadena(tokenBorrado)) {
+                tokenCSS.setTexto(tokenBorrado);
+                tokenCSS.setTipo("Cadena");
+                listaTokensCss.add(tokenCSS);
+            } else if (tokenCSS.esIdentificador(tokenBorrado)) {
+                tokenCSS.setTexto(tokenBorrado);
+                tokenCSS.setTipo("Identificador");
+                listaTokensCss.add(tokenCSS);
+            } else if (tokenCSS.esCombinador(tokenBorrado)) {
+                tokenCSS.setTexto(tokenBorrado);
+                tokenCSS.setTipo("Combinador");
+                listaTokensCss.add(tokenCSS);
+            } else if (tokenCSS.esOtro(tokenBorrado)) {
+                tokenCSS.setTexto(tokenBorrado);
+                tokenCSS.setTipo("Otro");
+                listaTokensCss.add(tokenCSS);
+            } else if (tokenCSS.isDigit(caracterDigito)) {
+                tokenCSS.setTexto(tokenBorrado);
+                tokenCSS.setTipo("Digito");
+                listaTokensCss.add(tokenCSS);
+            } else if (tokenCSS.esComentario(tokenBorrado)) {
+                tokenCSS.setTexto(tokenBorrado);
+                tokenCSS.setTipo("Comentario");
+                listaTokensCss.add(tokenCSS);
+            }
+        }
+
+        // Imprimir los tokens borrados
+        for (TokensCSS token : listaTokensCss) {
+            System.out.println("Token borrado: " + token.getTexto() + " (" + token.getTipo() + ")");
+        }
+
+        return contenidoOptimizado.toString();
+    }
+
+    private void guardarTokensSeparadosCSS(String linea, List<String> tokensBorrados) {
+        StringBuilder tokenActual = new StringBuilder();
+        boolean dentroDeComentario = false;
+
+        for (int i = 0; i < linea.length(); i++) {
+            char caracterActual = linea.charAt(i);
+
+            // Detectar el inicio de un comentario y guardar el comentario completo
+            if (!dentroDeComentario && caracterActual == '/' && i + 1 < linea.length() && linea.charAt(i + 1) == '/') {
+                dentroDeComentario = true; // Empezamos a procesar el comentario
+                if (tokenActual.length() > 0) {
+                    tokensBorrados.add(tokenActual.toString().trim());
+                    tokenActual.setLength(0);
+                }
+                tokenActual.append("//"); // Agregamos los dos slashes iniciales
+                i++; // Saltar el siguiente slash ya que lo hemos procesado
+                continue;
+            }
+
+            // Si estamos dentro de un comentario, agregar el resto de la línea al token
+            if (dentroDeComentario) {
+                tokenActual.append(caracterActual);
+                if (i == linea.length() - 1) {
+                    tokensBorrados.add(tokenActual.toString().trim()); // Guardar el comentario completo
+                }
+                continue;
+            }
+
+            // Separar los tokens por los caracteres especiales
+            if (esSeparador(caracterActual)) {
+                if (tokenActual.length() > 0) {
+                    tokensBorrados.add(tokenActual.toString().trim());
+                    tokenActual.setLength(0);
+                }
+                tokensBorrados.add(String.valueOf(caracterActual)); // Agregar separadores como tokens
+            } else {
+                tokenActual.append(caracterActual);
+            }
+        }
+
+        // Guardar el último token, si queda alguno
+        if (tokenActual.length() > 0) {
+            tokensBorrados.add(tokenActual.toString().trim());
+        }
+    }
+
+    private boolean esSeparador(char c) {
+        // Definir caracteres que actúan como separadores
+        return c == ' ' || c == '\n' || c == '\t' || c == ':' || c == ';' || c == '{' || c == '}' || c == '(' || c == ')' || c == ',' || c == '*';
+    }
+
+    public String optimizarJs(String contenido) throws ExceptionToken {
+        List<String> tokensBorrados = new ArrayList<>();
+        StringBuilder contenidoOptimizado = new StringBuilder(); // Acumular el contenido optimizado
+        String tokenEstado = ">>[js]";
+        String[] lineas = contenido.split("\n");
+
+        // Agregar siempre el token de estado al inicio del contenido optimizado
+        contenidoOptimizado.append(tokenEstado).append("\n");
+
+        for (String linea : lineas) {
+            String lineaTrim = linea.trim(); // Remover espacios al inicio y final para identificar mejor
+
+            // Saltar el token de estado si se encuentra en las líneas
+            if (lineaTrim.equals(tokenEstado)) {
+                continue; // No procesar más esta línea, simplemente ignorarla
+            }
+
+            // Manejo de comentarios JS con //
+            if (lineaTrim.contains("//")) {
+                // Dividir la línea en tokens antes de eliminarla
+                guardarTokensSeparadosJS(lineaTrim, tokensBorrados);
+                continue; // Omitir esta línea y pasar a la siguiente
+            }
+
+            // Si la línea no está vacía, agregarla al contenido optimizado
+            if (!lineaTrim.isEmpty()) {
+                contenidoOptimizado.append(linea).append("\n"); // Conservar la estructura original (indentación)
+            }
+        }
+
+        // Procesar los tokens eliminados y clasificarlos
+        for (String tokenBorrado : tokensBorrados) {
+            TokensJS tokenJS = new TokensJS(); // Crear un nuevo objeto TokensJS para cada token
+
+            if (tokenJS.esTokenValido(tokenBorrado)) {
+                tokenJS.setTexto(tokenBorrado);
+                tokenJS.setTipo("Token JS");
+                listaTokensJS.add(tokenJS);
+            } else if (tokenJS.esComentario(tokenBorrado)) {
+                tokenJS.setTexto(tokenBorrado);
+                tokenJS.setTipo("Comentario");
+                listaTokensJS.add(tokenJS);
+            } else if (tokenJS.esPalabraReservada(tokenBorrado)) {
+                tokenJS.setTexto(tokenBorrado);
+                tokenJS.setTipo("Palabra Reservada");
+                listaTokensJS.add(tokenJS);
+            } else if (tokenJS.isValidInteger(tokenBorrado)) {
+                tokenJS.setTexto(tokenBorrado);
+                tokenJS.setTipo("Entero");
+                listaTokensJS.add(tokenJS);
+            } else if (tokenJS.isValidFloat(tokenBorrado)) {
+                tokenJS.setTexto(tokenBorrado);
+                tokenJS.setTipo("Decimal");
+                listaTokensJS.add(tokenJS);
+            } else if (tokenJS.esCadena(tokenBorrado)) {
+                tokenJS.setTexto(tokenBorrado);
+                tokenJS.setTipo("Cadena");
+                listaTokensJS.add(tokenJS);
+            } else if (tokenJS.esIdentificadorValido(tokenBorrado)) {
+                tokenJS.setTexto(tokenBorrado);
+                tokenJS.setTipo("Identificador");
+                listaTokensJS.add(tokenJS);
+            } else if (tokenJS.esCorchete(tokenBorrado)) {
+                tokenJS.setTexto(tokenBorrado);
+                tokenJS.setTipo("Corchete");
+                listaTokensJS.add(tokenJS);
+            } else if (tokenJS.esLlave(tokenBorrado)) {
+                tokenJS.setTexto(tokenBorrado);
+                tokenJS.setTipo("Llave");
+                listaTokensJS.add(tokenJS);
+            } else if (tokenJS.esParentesis(tokenBorrado)) {
+                tokenJS.setTexto(tokenBorrado);
+                tokenJS.setTipo("Parentesis");
+                listaTokensJS.add(tokenJS);
+            }
+        }
+
+        // Imprimir los tokens borrados para verificar el proceso
+        for (TokensJS token : listaTokensJS) {
+            System.out.println("Token borrado: " + token.getTexto()+" "+token.getTipo());
+        }
+
+        return contenidoOptimizado.toString();
+    }
+
+    private void guardarTokensSeparadosJS(String linea, List<String> tokensBorrados) {
+        StringBuilder tokenActual = new StringBuilder();
+        boolean dentroDeComentario = false;
+
+        for (int i = 0; i < linea.length(); i++) {
+            char caracterActual = linea.charAt(i);
+
+            // Detectar el inicio de un comentario y guardar el comentario completo
+            if (!dentroDeComentario && caracterActual == '/' && i + 1 < linea.length() && linea.charAt(i + 1) == '/') {
+                dentroDeComentario = true; // Empezamos a procesar el comentario
+                if (tokenActual.length() > 0) {
+                    tokensBorrados.add(tokenActual.toString().trim());
+                    tokenActual.setLength(0);
+                }
+                tokenActual.append("//"); // Agregamos los dos slashes iniciales
+                i++; // Saltar el siguiente slash ya que lo hemos procesado
+                continue;
+            }
+
+            // Si estamos dentro de un comentario, agregar el resto de la línea al token
+            if (dentroDeComentario) {
+                tokenActual.append(caracterActual);
+                if (i == linea.length() - 1) {
+                    tokensBorrados.add(tokenActual.toString().trim()); // Guardar el comentario completo
+                }
+                continue;
+            }
+
+            // Separar los tokens por los caracteres especiales
+            if (esSeparadorJS(caracterActual)) {
+                if (tokenActual.length() > 0) {
+                    tokensBorrados.add(tokenActual.toString().trim());
+                    tokenActual.setLength(0);
+                }
+                tokensBorrados.add(String.valueOf(caracterActual)); // Agregar separadores como tokens
+            } else {
+                tokenActual.append(caracterActual);
+            }
+        }
+
+        // Guardar el último token, si queda alguno
+        if (tokenActual.length() > 0) {
+            tokensBorrados.add(tokenActual.toString().trim());
+        }
+    }
+
+    private boolean esSeparadorJS(char c) {
+        return c == ' ' || c == '\n' || c == '\t' || c == '(' || c == ')'
+                || c == '[' || c == ']' || c == '{' || c == '}' || c == ';'
+                || c == ',' || c == '+' || c == '-' || c == '*' || c == '/'
+                || c == '=' || c == '<' || c == '>' || c == '.';
     }
 
 }

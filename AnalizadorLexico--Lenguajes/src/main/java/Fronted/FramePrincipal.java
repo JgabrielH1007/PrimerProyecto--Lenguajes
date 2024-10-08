@@ -9,6 +9,8 @@ import Backend.Optimizador;
 import Exceptions.ExceptionToken;
 import java.awt.Color;
 import java.awt.Font;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
@@ -23,8 +25,9 @@ import javax.swing.text.Element;
  * @author gabrielh
  */
 public class FramePrincipal extends javax.swing.JFrame {
+
     private String textoCompleto;
-    
+
     /**
      * Creates new form FramePrincipal
      */
@@ -35,14 +38,14 @@ public class FramePrincipal extends javax.swing.JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         iniciarLista();
-         txaEditor.addCaretListener(e -> {
-        int pos = txaEditor.getCaretPosition();
-        try {
-            int fila = txaEditor.getLineOfOffset(pos) + 1;  // Obtener la fila (línea)
-            int columna = pos - txaEditor.getLineStartOffset(fila - 1) + 1;  // Obtener la columna
-            lblPosicioCursor.setText("Fila: " + fila + ", Columna: " + columna);  // Actualizar la etiqueta
-        } catch (BadLocationException ex) {
-            ex.printStackTrace();
+        txaEditor.addCaretListener(e -> {
+            int pos = txaEditor.getCaretPosition();
+            try {
+                int fila = txaEditor.getLineOfOffset(pos) + 1;  // Obtener la fila (línea)
+                int columna = pos - txaEditor.getLineStartOffset(fila - 1) + 1;  // Obtener la columna
+                lblPosicioCursor.setText("Fila: " + fila + ", Columna: " + columna);  // Actualizar la etiqueta
+            } catch (BadLocationException ex) {
+                ex.printStackTrace();
             }
         });
         txaEditor.getDocument().addDocumentListener(new DocumentListener() {
@@ -72,8 +75,6 @@ public class FramePrincipal extends javax.swing.JFrame {
                 updateLineNumbers();
             }
         });
-        
-
 
         // Ajustar el diseño del JFrame
         pack();
@@ -192,15 +193,14 @@ public class FramePrincipal extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-    
-    public void iniciarLista(){
+
+    public void iniciarLista() {
         txaListaNumero.setEnabled(false);
         txaEditor.setVisible(true);
         txaEditor.setEditable(true);
         txaEditor.setColumns(51); // Define un ancho de 20 columnas
         txaEditor.setFont(new Font("Monospaced", Font.PLAIN, 12)); // Fuente monoespaciada para alineación
         jScrollPane1.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-
 
 // Configurar el JTextArea para los números de línea
         txaListaNumero.setEditable(false);
@@ -210,25 +210,45 @@ public class FramePrincipal extends javax.swing.JFrame {
         jScrollPane2.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane2.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER); // Deshabilitar barra de desplazamiento vertical en jScrollPane2
 
-    // Sincronizar los scrolls de ambos JScrollPane
+        // Sincronizar los scrolls de ambos JScrollPane
         jScrollPane2.getViewport().setView(txaListaNumero);
-        jScrollPane1.getVerticalScrollBar().setModel(jScrollPane2.getVerticalScrollBar().getModel());   
+        jScrollPane1.getVerticalScrollBar().setModel(jScrollPane2.getVerticalScrollBar().getModel());
     }
-    
-    
+
+
     private void itemReportesOptiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemReportesOptiActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_itemReportesOptiActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
         Optimizador op = new Optimizador();
         try {
-            txaEditor.setText(op.optimizarTexto(txaEditor.getText()));
+            // Obtener el texto del editor y optimizarlo
+            Map<String, List<String>> resultado = op.optimizarTexto(txaEditor.getText());
+
+            // Construir un String a partir de las listas de HTML, CSS y JS
+            StringBuilder contenidoFinal = new StringBuilder();
+
+            // Concatenar el contenido de cada lista en su sección correspondiente
+            for (String html : resultado.get("html")) {
+                contenidoFinal.append(html).append("\n");
+            }
+
+            for (String css : resultado.get("css")) {
+                contenidoFinal.append(css).append("\n");
+            }
+
+            for (String js : resultado.get("js")) {
+                contenidoFinal.append(js).append("\n");
+            }
+
+            // Mostrar el contenido concatenado en el área de texto del editor
+            txaEditor.setText(contenidoFinal.toString());
+
         } catch (ExceptionToken ex) {
             Logger.getLogger(FramePrincipal.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jbtHTMLActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbtHTMLActionPerformed
@@ -236,8 +256,11 @@ public class FramePrincipal extends javax.swing.JFrame {
         LectorTexto verificar = new LectorTexto();
         try {
             verificar.leerTexto(txaEditor.getText());
-        } catch (ExceptionToken ex) {
-            Logger.getLogger(FramePrincipal.class.getName()).log(Level.SEVERE, null, ex);
+
+} catch (ExceptionToken ex) {
+            Logger.getLogger(FramePrincipal.class  
+
+.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_jbtHTMLActionPerformed
 
@@ -255,16 +278,28 @@ public class FramePrincipal extends javax.swing.JFrame {
                 if ("Nimbus".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
-                }
+
+}
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(FramePrincipal.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(FramePrincipal.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(FramePrincipal.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(FramePrincipal.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(FramePrincipal.class  
+
+.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
+} catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(FramePrincipal.class  
+
+.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
+} catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(FramePrincipal.class  
+
+.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
+} catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(FramePrincipal.class  
+
+.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
 

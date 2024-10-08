@@ -154,25 +154,24 @@ public class LectorTexto {
             TokensHTML tokenObjeto = new TokensHTML(); // Crear un nuevo objeto TokensHTML para cada token
             if (tokenObjeto.esTokenValido(token)) {
                 String traduccion = traducirToken(token); // Traducir el token
-                contenidoTraducido.append(traduccion).append("\n"); // Acumular la traducción
+                contenidoTraducido.append(traduccion).append("\n");
+                tokenObjeto.setTexto(token);
+                tokenObjeto.setTipo("Token Html");// Acumular la traducción
                 listaTokensHtml.add(tokenObjeto);
             }  else if (tokenObjeto.esComentario(token)) {
                 tokenObjeto.setTexto(token);
+                tokenObjeto.setTipo("Comentario");
                 listaTokensHtml.add(tokenObjeto);
-                contenidoTraducido.append(token).append("\n");
-                System.out.println("Comentario válido: " + token);
             } else if (tokenObjeto.esTextoValido(token)) {
                 tokenObjeto.setTexto(token);
-                listaTokensHtml.add(tokenObjeto); // Agregar el objeto a la lista
-                contenidoTraducido.append(token).append("\n");
-                System.out.println("Texto válido: " + token);
+                tokenObjeto.setTipo("Texto");
+                listaTokensHtml.add(tokenObjeto);
             }else if (!token.isEmpty()) {
                 TokenErrado tokenIn = new TokenErrado();
                 tokenIn.setTexto(token);
                 tokenIn.setLenguaje("Html");
                 listaTokenInvalido.add(tokenIn);
-                System.out.println("Token inválido: " + token);
-                throw new ExceptionToken("Token inválido: " + token);
+                
             }
         }
 
