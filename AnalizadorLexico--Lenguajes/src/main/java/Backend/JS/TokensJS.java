@@ -10,6 +10,12 @@ package Backend.JS;
  */
 public class TokensJS {
 
+    private String texto;
+    private final String LENGUAJE = "JavaScript";
+    private String expresionRegular;
+    private String tipo;
+    private int fila;
+    private int columna;
     private final String SUMA = "+";
     private final String RESTA = "-";
     private final String MULTIPLICACION = "*";
@@ -169,6 +175,57 @@ public class TokensJS {
 
         // Si pasa todas las validaciones, es un identificador válido
         return true;
+    }
+
+    public boolean esComentario(String linea) {
+        // Eliminar espacios en blanco al inicio de la línea
+        String lineaSinEspacios = linea.trim();
+
+        // Verificar si hay "//" en la línea
+        int indiceComentario = lineaSinEspacios.indexOf("//");
+
+        // Si encontramos "//", entonces es un comentario
+        return indiceComentario != -1;
+    }
+
+    public String getTexto() {
+        return texto;
+    }
+
+    public void setTexto(String texto) {
+        this.texto = texto;
+    }
+
+    public String getExpresionRegular() {
+        return expresionRegular;
+    }
+
+    public void setExpresionRegular(String expresionRegular) {
+        this.expresionRegular = expresionRegular;
+    }
+
+    public String getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
+    }
+
+    public int getFila() {
+        return fila;
+    }
+
+    public void setFila(int fila) {
+        this.fila = fila;
+    }
+
+    public int getColumna() {
+        return columna;
+    }
+
+    public void setColumna(int columna) {
+        this.columna = columna;
     }
 
 }

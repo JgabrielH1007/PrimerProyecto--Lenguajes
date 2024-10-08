@@ -9,24 +9,25 @@ package Backend.CSS;
  * @author gabrielh
  */
 public class TokensCSS {
+
     private String texto;
-    private final String[] ETIQUETAS = {"body","header","main","nav","aside","div","ul","ol","li","a","h1"
-    ,"h2","h3","h4","h5","h6","p","span","label","textarea","button","section","article","footer"};
-    private final String[] COMBINADORES = {">","+"," "};
-    private final String[] REGLAS = {"color","background-color","background","font-size","font-weight","font-family","font-align","width","height","min-width",
-    "min-height","max-width","max-height","display","inline","block","inline-block","flex","grid","none","margin","border","padding",
-    "content","border-color","border-style","border-width","border-top","border-bottom","border-left","border-right","box-sizing","border-box",
-    "position","static","relative","absolute","sticky","fixed","top","bottom","left","right","z-index","justify-content","align-items","border-radius","auto",
-    "float","list-style","text-align","box-shadow"};
-    private final String[] OTROS = {"px","%","rem","em","vw","vh",":hover",":active",":not()",":nth-child()","odd","even","::before","::after",
-    ":",";",",","(",")","{","}","[","]"};
+    private final String[] ETIQUETAS = {"body", "header", "main", "nav", "aside", "div", "ul", "ol", "li", "a", "h1",
+         "h2", "h3", "h4", "h5", "h6", "p", "span", "label", "textarea", "button", "section", "article", "footer"};
+    private final String[] COMBINADORES = {">", "+", " "};
+    private final String[] REGLAS = {"color", "background-color", "background", "font-size", "font-weight", "font-family", "font-align", "width", "height", "min-width",
+        "min-height", "max-width", "max-height", "display", "inline", "block", "inline-block", "flex", "grid", "none", "margin", "border", "padding",
+        "content", "border-color", "border-style", "border-width", "border-top", "border-bottom", "border-left", "border-right", "box-sizing", "border-box",
+        "position", "static", "relative", "absolute", "sticky", "fixed", "top", "bottom", "left", "right", "z-index", "justify-content", "align-items", "border-radius", "auto",
+        "float", "list-style", "text-align", "box-shadow"};
+    private final String[] OTROS = {"px", "%", "rem", "em", "vw", "vh", ":hover", ":active", ":not()", ":nth-child()", "odd", "even", "::before", "::after",
+        ":", ";", ",", "(", ")", "{", "}", "[", "]"};
     private final String LENGUAJE = "CSS";
     private String expresionRegular;
     private String tipo;
     private int fila;
     private int columna;
-    private final String UNIVERSAL= "*";
-    
+    private final String UNIVERSAL = "*";
+
     public boolean esEtiqueta(String cadena) {
         return verificarCadenaEnArreglo(cadena, ETIQUETAS);
     }
@@ -58,6 +59,17 @@ public class TokensCSS {
 
     public void setTexto(String texto) {
         this.texto = texto;
+    }
+
+    public boolean esComentario(String linea) {
+        // Eliminar espacios en blanco al inicio de la línea
+        String lineaSinEspacios = linea.trim();
+
+        // Verificar si hay "//" en la línea
+        int indiceComentario = lineaSinEspacios.indexOf("//");
+
+        // Si encontramos "//", entonces es un comentario
+        return indiceComentario != -1;
     }
 
     public boolean esClase(String token) {
@@ -100,7 +112,7 @@ public class TokensCSS {
     public boolean isDigit(char c) {
         return c >= '0' && c <= '9';
     }
-    
+
     public boolean esId(String token) {
         if (token == null || token.isEmpty() || token.charAt(0) != '#') {
             return false;  // Si el token es nulo, vacío o no empieza con '#', es inválido
@@ -132,12 +144,12 @@ public class TokensCSS {
             }
         }
 
-        return true; 
+        return true;
     }
-    
+
     public boolean esCadena(String token) {
         if (token == null || token.length() < 2) {
-            return false;  
+            return false;
         }
 
         if (token.charAt(0) == '\'' && token.charAt(token.length() - 1) == '\'') {
@@ -152,7 +164,7 @@ public class TokensCSS {
 
         return false;  // Si no empieza o no termina con comillas simples
     }
-    
+
     public boolean esColor(String token) {
         if (token == null || token.isEmpty()) {
             return false;  // Si el token es nulo o vacío, es inválido
@@ -185,7 +197,7 @@ public class TokensCSS {
             return true;  // Es un color hexadecimal válido
         }
 
-        return false; 
+        return false;
     }
 
     // Método auxiliar para verificar si un carácter es un dígito hexadecimal [0-9, a-f, A-F]
@@ -238,18 +250,18 @@ public class TokensCSS {
             return false;  // No es un número flotante válido
         }
     }
-    
+
     public boolean esIdentificador(String token) {
         if (token == null || token.isEmpty()) {
             return false;  // Si el token es nulo o vacío, es inválido
         }
 
         int i = 0;
-        
+
         if (!isLowerCaseLetter(token.charAt(i))) {
             return false;  // Si no empieza con una letra minúscula, es inválido
         }
-        
+
         while (i < token.length() && isLowerCaseLetter(token.charAt(i))) {
             i++;
         }
@@ -325,11 +337,5 @@ public class TokensCSS {
     public String getUNIVERSAL() {
         return UNIVERSAL;
     }
-    
+
 }
-
-
-
-    
-
-

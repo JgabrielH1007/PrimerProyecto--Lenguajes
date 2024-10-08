@@ -9,29 +9,28 @@ package Backend.HTML;
  * @author gabrielh
  */
 public class TokensHTML {
+
     private final String APERTURA = "<";
     private final String CIERRE = ">";
     private final String BARRACIERRE = "/";
-    private final String[] CONTENIDO_TOKENS = {"principal", "encabezado", "navegacion", "apartado", "listaordenada", 
-    "listadesordenada", "itemlista", "anclaje", "contenedor", "seccion", 
-    "articulo", "titulo1", "titulo2", "titulo3", "titulo4", "titulo5", 
-    "titulo6", "parrafo", "span", "entrada", "formulario", "label", 
-    "area", "boton", "piepagina"};
-    private final String[] PALABRAS_RESERVADAS = {"class", "=", "href", "onClick", "id", "style", "type", "placeholder", 
-    "required", "name"};
+    private final String[] CONTENIDO_TOKENS = {"principal", "encabezado", "navegacion", "apartado", "listaordenada",
+        "listadesordenada", "itemlista", "anclaje", "contenedor", "seccion",
+        "articulo", "titulo1", "titulo2", "titulo3", "titulo4", "titulo5",
+        "titulo6", "parrafo", "span", "entrada", "formulario", "label",
+        "area", "boton", "piepagina"};
+    private final String[] PALABRAS_RESERVADAS = {"class", "=", "href", "onClick", "id", "style", "type", "placeholder",
+        "required", "name"};
     private String texto;
     private final String LENGUAJE = "Html";
     private String expresionRegular;
     private String tipo;
     private int fila;
     private int columna;
-    
-    
-    
+
     // Método para verificar si un token de cadena es válido
     public boolean tokenCadena(String token) {
         if (token == null || token.length() < 2) {
-            return false;  
+            return false;
         }
 
         if (token.charAt(0) == '\"' && token.charAt(token.length() - 1) == '\"') {
@@ -96,6 +95,17 @@ public class TokensHTML {
         return true;
     }
 
+    public boolean esComentario(String linea) {
+        // Eliminar espacios en blanco al inicio de la línea
+        String lineaSinEspacios = linea.trim();
+
+        // Verificar si hay "//" en la línea
+        int indiceComentario = lineaSinEspacios.indexOf("//");
+
+        // Si encontramos "//", entonces es un comentario
+        return indiceComentario != -1;
+    }
+
     // Verifica si el contenido es válido (si pertenece a CONTENIDO_TOKENS)
     private boolean esContenidoValido(String contenido) {
         for (String token : CONTENIDO_TOKENS) {
@@ -137,8 +147,5 @@ public class TokensHTML {
     public void setTexto(String texto) {
         this.texto = texto;
     }
-    
-    
-    
-}
 
+}

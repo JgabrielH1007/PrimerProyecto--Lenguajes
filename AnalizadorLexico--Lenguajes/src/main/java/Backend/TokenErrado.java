@@ -8,6 +8,7 @@ package Backend;
  *
  * @author gabrielh
  */
+
 public class TokenErrado {
 
     private String texto;
@@ -46,7 +47,5 @@ public class TokenErrado {
     public void setColumna(int columna) {
         this.columna = columna;
     }
-    
-    
-    
+
 }
