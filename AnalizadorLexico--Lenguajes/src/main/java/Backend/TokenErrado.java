@@ -13,9 +13,20 @@ public class TokenErrado {
 
     private String texto;
     private String lenguaje;
+    private String lenguajeSugerido;
     private int fila;
     private int columna;
 
+    public String getLenguajeSugerido() {
+        return lenguajeSugerido;
+    }
+
+    public void setLenguajeSugerido(String lenguajeSugerido) {
+        this.lenguajeSugerido = lenguajeSugerido;
+    }
+    
+    
+    
     public String getTexto() {
         return texto;
     }

@@ -4,11 +4,13 @@
  */
 package Backend.CSS;
 
+import Backend.Token;
+
 /**
  *
  * @author gabrielh
  */
-public class TokensCSS {
+public class TokensCSS extends Token{
 
     private String texto;
     private final String[] ETIQUETAS = {"body", "header", "main", "nav", "aside", "div", "ul", "ol", "li", "a", "h1",

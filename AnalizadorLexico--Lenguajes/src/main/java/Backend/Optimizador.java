@@ -129,23 +129,26 @@ public class Optimizador {
         }
 
         for (String tokenBorrado : tokensBorrados) {
-            TokensHTML tokenObjeto = new TokensHTML(); // Crear un nuevo objeto TokensHTML para cada token
-            if (tokenObjeto.esTokenValido(tokenBorrado)) {
-                tokenObjeto.setTexto(tokenBorrado);
-                tokenObjeto.setTipo("Token Html");
-                listaTokensHtml.add(tokenObjeto);
-            } else if (tokenObjeto.esComentario(tokenBorrado)) {
-                tokenObjeto.setTexto(tokenBorrado);
-                tokenObjeto.setTipo("Comentario");
-                listaTokensHtml.add(tokenObjeto);
-            } else if (tokenObjeto.esTextoValido(tokenBorrado)) {
-                tokenObjeto.setTexto(tokenBorrado);
-                tokenObjeto.setTipo("Texto");
-                listaTokensHtml.add(tokenObjeto);
+            TokensHTML tokenHTML = new TokensHTML(); // Crear un nuevo objeto TokensHTML para cada token
+            if (tokenHTML.esTokenValido(tokenBorrado)) {
+                tokenHTML.setTexto(tokenBorrado);
+                tokenHTML.setTipo("Token Html");
+                tokenHTML.setExpresionRegular(tokenBorrado);
+                listaTokensHtml.add(tokenHTML);
+            } else if (tokenHTML.esComentario(tokenBorrado)) {
+                tokenHTML.setTexto(tokenBorrado);
+                tokenHTML.setTipo("Comentario");
+                tokenHTML.setExpresionRegular("// [a-zA-Z]|[0-9]|[.]");
+                listaTokensHtml.add(tokenHTML);
+            } else if (tokenHTML.esTextoValido(tokenBorrado)) {
+                tokenHTML.setTexto(tokenBorrado);
+                tokenHTML.setTipo("Texto");
+                listaTokensHtml.add(tokenHTML);
             } else if (!tokenBorrado.isEmpty()) {
-                tokenObjeto.setTexto(tokenBorrado);
-                tokenObjeto.setTipo("Invalido");
-                listaTokensHtml.add(tokenObjeto);
+                tokenHTML.setTexto(tokenBorrado);
+                tokenHTML.setTipo("Texto");
+                tokenHTML.setExpresionRegular("[a-zA-Z0-9\\\\s\\\\S]*");
+                listaTokensHtml.add(tokenHTML);
             } // Agregarlo a la lista de tokens eliminados
         }
 
@@ -236,49 +239,79 @@ public class Optimizador {
         for (String tokenBorrado : tokensBorrados) {
             TokensCSS tokenCSS = new TokensCSS(); // Crear un nuevo objeto TokensCSS para cada token
             char caracterDigito = tokenBorrado.charAt(0); // Obtener el primer carácter para detectar dígitos
+            try {
+                // Intentar convertir el token a un entero
+                int numeroEntero = Integer.parseInt(tokenBorrado);
+                tokenCSS.setTexto(tokenBorrado);
+                tokenCSS.setExpresionRegular("[0-9]+");
+                tokenCSS.setTipo("Entero");
+                listaTokensCss.add(tokenCSS);
+            } catch (NumberFormatException e1) {
+                try {
+                    // Intentar convertir el token a un decimal
+                    float numeroDecimal = Float.parseFloat(tokenBorrado);
+                    tokenCSS.setTexto(tokenBorrado);
+                    tokenCSS.setExpresionRegular("[0-9]+.[0-9]+");
+                    tokenCSS.setTipo("Decimal");
+                    listaTokensCss.add(tokenCSS);
+                } catch (NumberFormatException e2) {
+                }
+            }
 
+            // Resto del código para verificar otros tipos de tokens
             if (tokenCSS.esEtiqueta(tokenBorrado)) {
                 tokenCSS.setTexto(tokenBorrado);
+                tokenCSS.setExpresionRegular(tokenBorrado);
                 tokenCSS.setTipo("Etiqueta");
                 listaTokensCss.add(tokenCSS);
             } else if (tokenCSS.esClase(tokenBorrado)) {
                 tokenCSS.setTexto(tokenBorrado);
-                tokenCSS.setTipo("Clase");
+                tokenCSS.setExpresionRegular(".[a-z]+[0-9]*(-([a-z]|[0-9])+)*");
+                tokenCSS.setTipo("De clase");
+                listaTokensCss.add(tokenCSS);
+            } else if (tokenBorrado.equals(tokenCSS.getUNIVERSAL())) {
+                tokenCSS.setTexto(tokenBorrado);
+                tokenCSS.setExpresionRegular(tokenBorrado);
+                tokenCSS.setTipo("Universal");
                 listaTokensCss.add(tokenCSS);
             } else if (tokenCSS.esId(tokenBorrado)) {
                 tokenCSS.setTexto(tokenBorrado);
+                tokenCSS.setExpresionRegular("#[a-z]+[0-9]*(-([a-z]|[0-9])+)*");
                 tokenCSS.setTipo("Id");
                 listaTokensCss.add(tokenCSS);
             } else if (tokenCSS.esRegla(tokenBorrado)) {
                 tokenCSS.setTexto(tokenBorrado);
+                tokenCSS.setExpresionRegular(tokenBorrado);
                 tokenCSS.setTipo("Regla");
                 listaTokensCss.add(tokenCSS);
             } else if (tokenCSS.esColor(tokenBorrado)) {
                 tokenCSS.setTexto(tokenBorrado);
+                tokenCSS.setExpresionRegular("#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})");
                 tokenCSS.setTipo("Color");
                 listaTokensCss.add(tokenCSS);
             } else if (tokenCSS.esCadena(tokenBorrado)) {
                 tokenCSS.setTexto(tokenBorrado);
+                tokenCSS.setExpresionRegular("'([^'\\\\]*(\\\\.[^'\\\\]*)*)'");
                 tokenCSS.setTipo("Cadena");
                 listaTokensCss.add(tokenCSS);
             } else if (tokenCSS.esIdentificador(tokenBorrado)) {
                 tokenCSS.setTexto(tokenBorrado);
+                tokenCSS.setExpresionRegular("[a-z]+[0-9]*(-([a-z]|[0-9])+)*");
                 tokenCSS.setTipo("Identificador");
                 listaTokensCss.add(tokenCSS);
             } else if (tokenCSS.esCombinador(tokenBorrado)) {
                 tokenCSS.setTexto(tokenBorrado);
+                tokenCSS.setExpresionRegular(tokenBorrado);
                 tokenCSS.setTipo("Combinador");
                 listaTokensCss.add(tokenCSS);
             } else if (tokenCSS.esOtro(tokenBorrado)) {
                 tokenCSS.setTexto(tokenBorrado);
+                tokenCSS.setExpresionRegular(tokenBorrado);
                 tokenCSS.setTipo("Otro");
-                listaTokensCss.add(tokenCSS);
-            } else if (tokenCSS.isDigit(caracterDigito)) {
-                tokenCSS.setTexto(tokenBorrado);
-                tokenCSS.setTipo("Digito");
                 listaTokensCss.add(tokenCSS);
             } else if (tokenCSS.esComentario(tokenBorrado)) {
                 tokenCSS.setTexto(tokenBorrado);
+                tokenCSS.setExpresionRegular("//[a-zA-Z]|[0-9]|[.]");
                 tokenCSS.setTipo("Comentario");
                 listaTokensCss.add(tokenCSS);
             }
@@ -379,42 +412,51 @@ public class Optimizador {
 
             if (tokenJS.esTokenValido(tokenBorrado)) {
                 tokenJS.setTexto(tokenBorrado);
-                tokenJS.setTipo("Token JS");
+                tokenJS.setExpresionRegular(tokenBorrado);
                 listaTokensJS.add(tokenJS);
             } else if (tokenJS.esComentario(tokenBorrado)) {
                 tokenJS.setTexto(tokenBorrado);
+                tokenJS.setExpresionRegular("//[a-zA-Z]|[0-9]|[.]");
                 tokenJS.setTipo("Comentario");
                 listaTokensJS.add(tokenJS);
             } else if (tokenJS.esPalabraReservada(tokenBorrado)) {
                 tokenJS.setTexto(tokenBorrado);
-                tokenJS.setTipo("Palabra Reservada");
+                tokenJS.setExpresionRegular(tokenBorrado);
+                tokenJS.setTipo("Palabra reservada");
                 listaTokensJS.add(tokenJS);
             } else if (tokenJS.isValidInteger(tokenBorrado)) {
                 tokenJS.setTexto(tokenBorrado);
+                tokenJS.setExpresionRegular("[0-9]+");
                 tokenJS.setTipo("Entero");
                 listaTokensJS.add(tokenJS);
             } else if (tokenJS.isValidFloat(tokenBorrado)) {
                 tokenJS.setTexto(tokenBorrado);
+                tokenJS.setExpresionRegular("[0-9]+.[0-9]+");
                 tokenJS.setTipo("Decimal");
                 listaTokensJS.add(tokenJS);
             } else if (tokenJS.esCadena(tokenBorrado)) {
                 tokenJS.setTexto(tokenBorrado);
+                tokenJS.setExpresionRegular(tokenBorrado);
                 tokenJS.setTipo("Cadena");
                 listaTokensJS.add(tokenJS);
             } else if (tokenJS.esIdentificadorValido(tokenBorrado)) {
                 tokenJS.setTexto(tokenBorrado);
+                tokenJS.setExpresionRegular("[a-zA-Z]([a-zA-Z]|[0-9]|[ _ ])*");
                 tokenJS.setTipo("Identificador");
                 listaTokensJS.add(tokenJS);
             } else if (tokenJS.esCorchete(tokenBorrado)) {
                 tokenJS.setTexto(tokenBorrado);
+                tokenJS.setExpresionRegular(tokenBorrado);
                 tokenJS.setTipo("Corchete");
                 listaTokensJS.add(tokenJS);
             } else if (tokenJS.esLlave(tokenBorrado)) {
                 tokenJS.setTexto(tokenBorrado);
+                tokenJS.setExpresionRegular(tokenBorrado);
                 tokenJS.setTipo("Llave");
                 listaTokensJS.add(tokenJS);
             } else if (tokenJS.esParentesis(tokenBorrado)) {
                 tokenJS.setTexto(tokenBorrado);
+                tokenJS.setExpresionRegular(tokenBorrado);
                 tokenJS.setTipo("Parentesis");
                 listaTokensJS.add(tokenJS);
             }
@@ -422,7 +464,7 @@ public class Optimizador {
 
         // Imprimir los tokens borrados para verificar el proceso
         for (TokensJS token : listaTokensJS) {
-            System.out.println("Token borrado: " + token.getTexto()+" "+token.getTipo());
+            System.out.println("Token borrado: " + token.getTexto() + " " + token.getTipo());
         }
 
         return contenidoOptimizado.toString();
@@ -479,6 +521,18 @@ public class Optimizador {
                 || c == '[' || c == ']' || c == '{' || c == '}' || c == ';'
                 || c == ',' || c == '+' || c == '-' || c == '*' || c == '/'
                 || c == '=' || c == '<' || c == '>' || c == '.';
+    }
+
+    public List<TokensHTML> getListaTokensHtml() {
+        return listaTokensHtml;
+    }
+
+    public List<TokensCSS> getListaTokensCss() {
+        return listaTokensCss;
+    }
+
+    public List<TokensJS> getListaTokensJS() {
+        return listaTokensJS;
     }
 
 }

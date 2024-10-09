@@ -4,11 +4,13 @@
  */
 package Backend.HTML;
 
+import Backend.Token;
+
 /**
  *
  * @author gabrielh
  */
-public class TokensHTML {
+public class TokensHTML extends Token{
 
     private final String APERTURA = "<";
     private final String CIERRE = ">";
@@ -55,7 +57,6 @@ public class TokensHTML {
             return false;
         }
 
-        // Remover "<" y ">" para obtener el contenido del token
         String contenido = token.substring(1, token.length() - 1).trim();
 
         // Si el contenido comienza con '/', es un token de cierre
@@ -96,7 +97,6 @@ public class TokensHTML {
     }
 
     public boolean esComentario(String linea) {
-        // Eliminar espacios en blanco al inicio de la línea
         String lineaSinEspacios = linea.trim();
 
         // Verificar si hay "//" en la línea
@@ -116,7 +116,6 @@ public class TokensHTML {
         return false;
     }
 
-    // Verifica si la palabra es una palabra reservada válida
     private boolean esPalabraReservada(String palabra) {
         for (String reservada : PALABRAS_RESERVADAS) {
             if (reservada.equals(palabra)) {
@@ -126,7 +125,6 @@ public class TokensHTML {
         return false;
     }
 
-    // Verificar si un texto es válido (sin '<' o '>')
     public boolean esTextoValido(String texto) {
         if (texto == null || texto.trim().isEmpty()) {
             return false;
@@ -179,6 +177,7 @@ public class TokensHTML {
     public void setColumna(int columna) {
         this.columna = columna;
     }
+    
     
     
 

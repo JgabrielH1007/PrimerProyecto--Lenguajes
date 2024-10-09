@@ -4,6 +4,8 @@
 
 package com.mycompany.analizadorlexico.lenguajes;
 
+import Fronted.FramePrincipal;
+
 /**
  *
  * @author gabrielh
@@ -11,6 +13,10 @@ package com.mycompany.analizadorlexico.lenguajes;
 public class AnalizadorLexicoLenguajes {
 
     public static void main(String[] args) {
-        System.out.println("Hello World!");
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new FramePrincipal().setVisible(true);
+            }
+        });
     }
 }

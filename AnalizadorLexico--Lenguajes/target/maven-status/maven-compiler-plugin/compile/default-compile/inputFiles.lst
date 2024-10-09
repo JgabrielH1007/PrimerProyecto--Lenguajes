@@ -4,6 +4,10 @@
 /home/gabrielh/PrimerProyecto--Lenguajes/AnalizadorLexico--Lenguajes/src/main/java/Backend/JS/TokensJS.java
 /home/gabrielh/PrimerProyecto--Lenguajes/AnalizadorLexico--Lenguajes/src/main/java/Backend/LectorTexto.java
 /home/gabrielh/PrimerProyecto--Lenguajes/AnalizadorLexico--Lenguajes/src/main/java/Backend/Optimizador.java
+/home/gabrielh/PrimerProyecto--Lenguajes/AnalizadorLexico--Lenguajes/src/main/java/Backend/Reportes/ReporteErrores.java
+/home/gabrielh/PrimerProyecto--Lenguajes/AnalizadorLexico--Lenguajes/src/main/java/Backend/Reportes/ReporteOptimizacion.java
+/home/gabrielh/PrimerProyecto--Lenguajes/AnalizadorLexico--Lenguajes/src/main/java/Backend/Reportes/ReporteTokens.java
+/home/gabrielh/PrimerProyecto--Lenguajes/AnalizadorLexico--Lenguajes/src/main/java/Backend/Token.java
 /home/gabrielh/PrimerProyecto--Lenguajes/AnalizadorLexico--Lenguajes/src/main/java/Backend/TokenDeEstado.java
 /home/gabrielh/PrimerProyecto--Lenguajes/AnalizadorLexico--Lenguajes/src/main/java/Backend/TokenErrado.java
 /home/gabrielh/PrimerProyecto--Lenguajes/AnalizadorLexico--Lenguajes/src/main/java/Exceptions/ExceptionToken.java

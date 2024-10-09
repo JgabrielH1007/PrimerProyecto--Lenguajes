@@ -4,11 +4,13 @@
  */
 package Backend.JS;
 
+import Backend.Token;
+
 /**
  *
  * @author gabrielh
  */
-public class TokensJS {
+public class TokensJS extends Token{
 
     private String texto;
     private final String LENGUAJE = "JavaScript";
@@ -45,48 +47,70 @@ public class TokensJS {
 
     public boolean esTokenValido(String token) {
         if (token.equals(SUMA)) {
+            tipo="Aritmetico";
             return true;
         } else if (token.equals(RESTA)) {
+            tipo="Aritmetico";
             return true;
         } else if (token.equals(MULTIPLICACION)) {
+            tipo="Aritmetico";
             return true;
         } else if (token.equals(DIVISION)) {
+            tipo="Aritmetico";
             return true;
         } else if (token.equals(IGUAL)) {
+            tipo = "Relacionales";
             return true;
         } else if (token.equals(MENORQUE)) {
+            tipo = "Relacionales";
             return true;
         } else if (token.equals(MAYORQUE)) {
+            tipo = "Relacionales";
             return true;
         } else if (token.equals(MENORIGUALQUE)) {
+            tipo = "Relacionales";
             return true;
         } else if (token.equals(MAYORIGUALQUE)) {
+            tipo = "Relacionales";
             return true;
         } else if (token.equals(DIFERENTE)) {
+            tipo = "Relacionales";
             return true;
         } else if (token.equals(OR)) {
+            tipo = "Logico";
             return true;
         } else if (token.equals(AND)) {
+            tipo = "Logico";
             return true;
         } else if (token.equals(NOT)) {
+            tipo = "Logico";
             return true;
         } else if (token.equals(INCREMENTO)) {
+            tipo = "Incrementales";
             return true;
         } else if (token.equals(DECREMENTO)) {
+            tipo = "Incrementales";
             return true;
         } else if (token.equals(TRUE)) {
+            tipo="booleano";
             return true;
         } else if (token.equals(FALSE)) {
+            tipo="booleano";
             return true;
         } else if (token.equals(ASIGNACION)) {
+            tipo = "Otro";
             return true;
         } else if (token.equals(PUNTOYCOMA)) {
+            tipo = "Otro";
             return true;
         } else if (token.equals(COMA)) {
+            tipo = "Otro";
             return true;
         } else if (token.equals(PUNTO)) {
+            tipo = "Otro";
             return true;
         } else if (token.equals(DOSPUNTOS)) {
+            tipo = "Otro";
             return true;
         }
         return false;

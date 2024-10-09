@@ -4,8 +4,12 @@
  */
 package Fronted;
 
+import Backend.GeneradorHTML;
 import Backend.LectorTexto;
 import Backend.Optimizador;
+import Backend.Reportes.ReporteErrores;
+import Backend.Reportes.ReporteOptimizacion;
+import Backend.Reportes.ReporteTokens;
 import Exceptions.ExceptionToken;
 import java.awt.Color;
 import java.awt.Font;
@@ -27,7 +31,8 @@ import javax.swing.text.Element;
 public class FramePrincipal extends javax.swing.JFrame {
 
     private String textoCompleto;
-
+    private LectorTexto verificar;
+    private Optimizador op;
     /**
      * Creates new form FramePrincipal
      */
@@ -137,6 +142,11 @@ public class FramePrincipal extends javax.swing.JFrame {
 
         itemReportesToken.setFont(new java.awt.Font("Hack", 0, 12)); // NOI18N
         itemReportesToken.setText("Reportes de Tokens");
+        itemReportesToken.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                itemReportesTokenActionPerformed(evt);
+            }
+        });
         menuReportes.add(itemReportesToken);
 
         itemReportesOpti.setFont(new java.awt.Font("Hack", 0, 12)); // NOI18N
@@ -150,6 +160,11 @@ public class FramePrincipal extends javax.swing.JFrame {
 
         itemReporteErrores.setFont(new java.awt.Font("Hack", 0, 12)); // NOI18N
         itemReporteErrores.setText("Reporte de Errores");
+        itemReporteErrores.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                itemReporteErroresActionPerformed(evt);
+            }
+        });
         menuReportes.add(itemReporteErrores);
 
         jMenuBar1.add(menuReportes);
@@ -218,10 +233,13 @@ public class FramePrincipal extends javax.swing.JFrame {
 
     private void itemReportesOptiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemReportesOptiActionPerformed
         // TODO add your handling code here:
+        java.awt.EventQueue.invokeLater(() -> {
+                new ReporteOptimizacion(op.getListaTokensHtml(),op.getListaTokensCss(),op.getListaTokensJS()).setVisible(true);
+            });
     }//GEN-LAST:event_itemReportesOptiActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        Optimizador op = new Optimizador();
+        op = new Optimizador();
         try {
             // Obtener el texto del editor y optimizarlo
             Map<String, List<String>> resultado = op.optimizarTexto(txaEditor.getText());
@@ -253,63 +271,41 @@ public class FramePrincipal extends javax.swing.JFrame {
 
     private void jbtHTMLActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbtHTMLActionPerformed
         // TODO add your handling code here:
-        LectorTexto verificar = new LectorTexto();
-        try {
-            verificar.leerTexto(txaEditor.getText());
+        verificar = new LectorTexto();
+        verificar.leerTexto(txaEditor.getText());
 
-} catch (ExceptionToken ex) {
-            Logger.getLogger(FramePrincipal.class  
+        String html = String.join("\n", verificar.getHtmlList());
+        String css = String.join("\n", verificar.getCssList());
+        String js = String.join("\n", verificar.getJsList());
 
-.getName()).log(Level.SEVERE, null, ex);
+        if (verificar.esTextoValido()) {
+            GeneradorHTML genHtml = new GeneradorHTML();
+            genHtml.generarHtml(html, css, js);
+        } else {
+            java.awt.EventQueue.invokeLater(() -> {
+                new ReporteErrores(verificar.getListaTokenInvalido()).setVisible(true);
+            });
         }
     }//GEN-LAST:event_jbtHTMLActionPerformed
+
+    private void itemReportesTokenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemReportesTokenActionPerformed
+        // TODO add your handling code here:
+        java.awt.EventQueue.invokeLater(() -> {
+                new ReporteTokens(verificar.getListaTokensHtml(),verificar.getListaTokensCss(),verificar.getListaTokensJS()).setVisible(true);
+            });
+    }//GEN-LAST:event_itemReportesTokenActionPerformed
+
+    private void itemReporteErroresActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemReporteErroresActionPerformed
+        // TODO add your handling code here:
+        java.awt.EventQueue.invokeLater(() -> {
+                new ReporteErrores(verificar.getListaTokenInvalido()).setVisible(true);
+            });
+    }//GEN-LAST:event_itemReporteErroresActionPerformed
 
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
 
-}
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(FramePrincipal.class  
-
-.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-
-} catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(FramePrincipal.class  
-
-.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-
-} catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(FramePrincipal.class  
-
-.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-
-} catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(FramePrincipal.class  
-
-.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new FramePrincipal().setVisible(true);
-            }
-        });
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem itemReporteErrores;

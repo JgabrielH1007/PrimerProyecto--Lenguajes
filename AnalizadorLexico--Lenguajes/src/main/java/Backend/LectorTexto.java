@@ -9,7 +9,9 @@ import Backend.HTML.TokensHTML;
 import Backend.JS.TokensJS;
 import Exceptions.ExceptionToken;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -26,6 +28,9 @@ public class LectorTexto {
     private StringBuilder textoTraducido;
     private String contenidoCSS;
     private String contenidoJS;
+    private List<String> htmlList = new ArrayList<>();
+    private List<String> cssList = new ArrayList<>();
+    private List<String> jsList = new ArrayList<>();
 
     public LectorTexto() {
         listaTokensHtml = new ArrayList<>();
@@ -35,7 +40,7 @@ public class LectorTexto {
         textoTraducido = new StringBuilder(); // Inicializar el texto traducido
     }
 
-    public void leerTexto(String textoCompleto) throws ExceptionToken {
+    public void leerTexto(String textoCompleto){
         String[] lineas = textoCompleto.split("\n");
         StringBuilder contenidoActual = new StringBuilder();
         String tokenActual = "";
@@ -61,30 +66,22 @@ public class LectorTexto {
 
         // Al final, enviar cualquier contenido restante al analizador correspondiente
         enviarAlAnalizador(tokenActual, contenidoActual.toString());
-
-        // Verificar si todos los tokens son válidos antes de devolver el texto
-        if (esTextoValido()) {
-            System.out.println(textoTraducido);
-            System.out.println(contenidoCSS);
-            System.out.println(contenidoJS);
-        } else {
-            throw new ExceptionToken("El contenido contiene tokens no válidos.");
-        }
     }
 
-    private void enviarAlAnalizador(String token, String contenido) throws ExceptionToken {
+    private void enviarAlAnalizador(String token, String contenido){
         if (contenido.isEmpty()) {
             return; // No enviar si el contenido está vacío
         }
         switch (token) {
             case ">>[html]":
-                textoTraducido.append(analizarHtml(contenido)); // Acumular el contenido traducido
+                String html = textoTraducido.append(analizarHtml(contenido)).toString();
+                htmlList.add(html);// Acumular el contenido traducido
                 break;
             case ">>[css]":
-                contenidoCSS = analizarCSS(contenido);
+                cssList.add(analizarCSS(contenido));
                 break;
             case ">>[js]":
-                contenidoJS = analizarJS(contenido);
+                jsList.add(analizarJS(contenido));
                 break;
             default:
                 // Si no hay un token válido, no se realiza ninguna acción
@@ -92,7 +89,7 @@ public class LectorTexto {
         }
     }
 
-    public String analizarHtml(String contenido) throws ExceptionToken {
+    public String analizarHtml(String contenido){
         // Almacena cada token que se encuentre
         List<String> tokens = new ArrayList<>();
         StringBuilder contenidoTraducido = new StringBuilder(); // Acumular el contenido traducido
@@ -100,47 +97,28 @@ public class LectorTexto {
         // Variable auxiliar para acumular caracteres y formar un token
         StringBuilder tokenActual = new StringBuilder();
         boolean dentroDeEtiqueta = false;
-        boolean dentroDeComentario = false;
 
+        // Recorremos cada carácter del contenido
         for (int i = 0; i < contenido.length(); i++) {
             char caracterActual = contenido.charAt(i);
 
-            // Verificar si se encuentra el inicio de un comentario de una línea
-            if (!dentroDeEtiqueta && !dentroDeComentario && caracterActual == '/'
-                    && i + 1 < contenido.length() && contenido.charAt(i + 1) == '/') {
-                // Procesar el token acumulado antes del comentario
-                if (tokenActual.length() > 0) {
-                    tokens.add(tokenActual.toString().trim());
-                    tokenActual.setLength(0);
-                }
-                // Acumular el comentario
-                while (i < contenido.length() && caracterActual != '\n') {
-                    tokenActual.append(caracterActual);
-                    i++;
-                    if (i < contenido.length()) {
-                        caracterActual = contenido.charAt(i);
-                    }
-                }
-                // Procesar el comentario como un token
-                tokens.add(tokenActual.toString().trim());
-                tokenActual.setLength(0); // Limpiar el token actual
-                continue; // Continuar al siguiente carácter
-            }
-
-            // Acumular caracteres para formar el token actual
+            // Inicia una etiqueta
             if (caracterActual == '<') {
+                // Si hay contenido fuera de etiquetas, agregarlo como texto
                 if (tokenActual.length() > 0) {
                     tokens.add(tokenActual.toString().trim());
                     tokenActual.setLength(0);
                 }
                 dentroDeEtiqueta = true;
                 tokenActual.append(caracterActual);
-            } else if (caracterActual == '>') {
+            } // Finaliza una etiqueta
+            else if (caracterActual == '>') {
                 tokenActual.append(caracterActual);
                 tokens.add(tokenActual.toString().trim());
                 tokenActual.setLength(0);
                 dentroDeEtiqueta = false;
-            } else {
+            } // Cualquier otro contenido se acumula en el token actual
+            else {
                 tokenActual.append(caracterActual);
             }
         }
@@ -150,28 +128,38 @@ public class LectorTexto {
             tokens.add(tokenActual.toString().trim());
         }
 
+        // Procesar cada token y traducir si es necesario
         for (String token : tokens) {
-            TokensHTML tokenObjeto = new TokensHTML(); // Crear un nuevo objeto TokensHTML para cada token
-            if (tokenObjeto.esTokenValido(token)) {
-                String traduccion = traducirToken(token); // Traducir el token
-                contenidoTraducido.append(traduccion).append("\n");
-                tokenObjeto.setTexto(token);
-                tokenObjeto.setTipo("Token Html");// Acumular la traducción
-                listaTokensHtml.add(tokenObjeto);
-            }  else if (tokenObjeto.esComentario(token)) {
-                tokenObjeto.setTexto(token);
-                tokenObjeto.setTipo("Comentario");
-                listaTokensHtml.add(tokenObjeto);
-            } else if (tokenObjeto.esTextoValido(token)) {
-                tokenObjeto.setTexto(token);
-                tokenObjeto.setTipo("Texto");
-                listaTokensHtml.add(tokenObjeto);
-            }else if (!token.isEmpty()) {
+            TokensHTML tokenHTML = new TokensHTML(); // Crear un nuevo objeto TokensHTML para cada token
+            if (tokenHTML.esTokenValido(token)) {
+                // Si el token es una etiqueta válida, traducirla y agregarla
+                String traduccion = traducirToken(token);
+                contenidoTraducido.append(traduccion);
+                tokenHTML.setTexto(token);
+                tokenHTML.setTipo("Token Html");
+                tokenHTML.setExpresionRegular(token);
+                listaTokensHtml.add(tokenHTML);
+            } else if (tokenHTML.esComentario(token)) {
+                // Si el token es un comentario, agregarlo como está
+                contenidoTraducido.append(token).append("\n");
+                tokenHTML.setTexto(token);
+                tokenHTML.setTipo("Comentario");
+                tokenHTML.setExpresionRegular("// [a-zA-Z]|[0-9]|[.]");
+                listaTokensHtml.add(tokenHTML);
+            } else if (tokenHTML.esTextoValido(token)) {
+                // Si el token es texto fuera de etiquetas, conservarlo tal cual
+                contenidoTraducido.append(token).append("\n");
+                tokenHTML.setTexto(token);
+                tokenHTML.setTipo("Texto");
+                tokenHTML.setExpresionRegular("[a-zA-Z0-9\\\\s\\\\S]*");
+                listaTokensHtml.add(tokenHTML);
+            } else if (!token.isEmpty()) {
+                // Si es un token inválido, agregarlo a la lista de tokens errados
                 TokenErrado tokenIn = new TokenErrado();
                 tokenIn.setTexto(token);
                 tokenIn.setLenguaje("Html");
+                tokenIn.setLenguajeSugerido("Html");
                 listaTokenInvalido.add(tokenIn);
-                
             }
         }
 
@@ -260,7 +248,7 @@ public class LectorTexto {
         }
     }
 
-    public String analizarCSS(String contenido) throws ExceptionToken {
+    public String analizarCSS(String contenido){
         StringBuilder tokenActual = new StringBuilder(); // Construcción del token actual
 
         for (int i = 0; i < contenido.length(); i++) {
@@ -318,63 +306,111 @@ public class LectorTexto {
         return c == ' ' || c == '\n' || c == '\t' || c == ':' || c == ';' || c == '{' || c == '}' || c == '(' || c == ')' || c == ',' || c == '*';
     }
 
-    private void procesarTokenCSS(String token, TokensCSS tokenCSS) throws ExceptionToken {
+    private void procesarTokenCSS(String token, TokensCSS tokenCSS){
         token = token.trim();  // Eliminar espacios en blanco alrededor del token
         char caracterDigito = token.charAt(0);
+
+        // Verificar si es un número (entero o decimal)
+        try {
+            // Intentar convertir el token a un entero
+            int numeroEntero = Integer.parseInt(token);
+            System.out.println("Token entero válido: " + numeroEntero);
+            tokenCSS.setTexto(token);
+            tokenCSS.setExpresionRegular("[0-9]+");
+            tokenCSS.setTipo("Entero");
+            listaTokensCss.add(tokenCSS);
+            return; // Salir del método si se ha procesado como entero
+        } catch (NumberFormatException e1) {
+            try {
+                // Intentar convertir el token a un decimal
+                float numeroDecimal = Float.parseFloat(token);
+                System.out.println("Token decimal válido: " + numeroDecimal);
+                tokenCSS.setTexto(token);
+                tokenCSS.setExpresionRegular("[0-9]+.[0-9]+");
+                tokenCSS.setTipo("Decimal");
+                listaTokensCss.add(tokenCSS);
+                return; // Salir del método si se ha procesado como decimal
+            } catch (NumberFormatException e2) {
+            }
+        }
+
+        // Resto del código para verificar otros tipos de tokens
         if (tokenCSS.esEtiqueta(token)) {
             System.out.println("Etiqueta válida: " + token);
             tokenCSS.setTexto(token);
+            tokenCSS.setExpresionRegular(token);
+            tokenCSS.setTipo("Etiqueta");
             listaTokensCss.add(tokenCSS);
         } else if (tokenCSS.esClase(token)) {
             System.out.println("Clase válida: " + token);
             tokenCSS.setTexto(token);
+            tokenCSS.setExpresionRegular(".[a-z]+[0-9]*(-([a-z]|[0-9])+)*");
+            tokenCSS.setTipo("De clase");
+            listaTokensCss.add(tokenCSS);
+        } else if (token.equals(tokenCSS.getUNIVERSAL())) {
+            System.out.println("válida: " + token);
+            tokenCSS.setTexto(token);
+            tokenCSS.setExpresionRegular(token);
+            tokenCSS.setTipo("Universal");
             listaTokensCss.add(tokenCSS);
         } else if (tokenCSS.esId(token)) {
             System.out.println("ID válido: " + token);
             tokenCSS.setTexto(token);
+            tokenCSS.setExpresionRegular("#[a-z]+[0-9]*(-([a-z]|[0-9])+)*");
+            tokenCSS.setTipo("Id");
             listaTokensCss.add(tokenCSS);
         } else if (tokenCSS.esRegla(token)) {
             System.out.println("Regla válida: " + token);
             tokenCSS.setTexto(token);
+            tokenCSS.setExpresionRegular(token);
+            tokenCSS.setTipo("Regla");
             listaTokensCss.add(tokenCSS);
         } else if (tokenCSS.esColor(token)) {
             System.out.println("Color válido: " + token);
             tokenCSS.setTexto(token);
+            tokenCSS.setExpresionRegular("#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})");
+            tokenCSS.setTipo("Color");
             listaTokensCss.add(tokenCSS);
         } else if (tokenCSS.esCadena(token)) {
             System.out.println("Cadena válida: " + token);
             tokenCSS.setTexto(token);
+            tokenCSS.setExpresionRegular("'([^'\\\\]*(\\\\.[^'\\\\]*)*)'");
+            tokenCSS.setTipo("Cadena");
             listaTokensCss.add(tokenCSS);
         } else if (tokenCSS.esIdentificador(token)) {
             System.out.println("Identificador válido: " + token);
             tokenCSS.setTexto(token);
+            tokenCSS.setExpresionRegular("[a-z]+[0-9]*(-([a-z]|[0-9])+)*");
+            tokenCSS.setTipo("Identificador");
             listaTokensCss.add(tokenCSS);
         } else if (tokenCSS.esCombinador(token)) {
             System.out.println("Combinador válido: " + token);
             tokenCSS.setTexto(token);
+            tokenCSS.setExpresionRegular(token);
+            tokenCSS.setTipo("Combinador");
             listaTokensCss.add(tokenCSS);
         } else if (tokenCSS.esOtro(token)) {
             System.out.println("Otro token válido: " + token);
             tokenCSS.setTexto(token);
-            listaTokensCss.add(tokenCSS);
-        } else if (tokenCSS.isDigit(caracterDigito)) {
-            System.out.println("Digito token válido: " + caracterDigito);
-            tokenCSS.setTexto(token);
+            tokenCSS.setExpresionRegular(token);
+            tokenCSS.setTipo("Otro");
             listaTokensCss.add(tokenCSS);
         } else if (tokenCSS.esComentario(token)) {
             System.out.println("Comentario token válido: " + token);
             tokenCSS.setTexto(token);
+            tokenCSS.setExpresionRegular("//[a-zA-Z]|[0-9]|[.]");
+            tokenCSS.setTipo("Comentario");
             listaTokensCss.add(tokenCSS);
         } else {
             TokenErrado tokenIn = new TokenErrado();
             tokenIn.setTexto(token);
             tokenIn.setLenguaje("CSS");
+            tokenIn.setLenguajeSugerido("CSS");
             listaTokenInvalido.add(tokenIn);
-            throw new ExceptionToken("Token invalido: " + token);
         }
     }
 
-    public String analizarJS(String contenido) throws ExceptionToken {
+    public String analizarJS(String contenido){
 
         StringBuilder tokenActual = new StringBuilder(); // Construcción del token actual
         boolean dentroDeCadena = false;
@@ -403,7 +439,7 @@ public class LectorTexto {
                 tokenActual.setLength(0); // Limpiar el token actual
                 continue; // Continuar al siguiente carácter
             }
-            
+
             if (dentroDeCadena) {
                 tokenActual.append(caracter);
 
@@ -456,57 +492,88 @@ public class LectorTexto {
         return c == ' ' || c == '\n' || c == '\t' || c == '(' || c == ')'
                 || c == '[' || c == ']' || c == '{' || c == '}' || c == ';'
                 || c == ',' || c == '+' || c == '-' || c == '*' || c == '/'
-                || c == '=' || c == '<' || c == '>' || c == '"' || c == '.';
+                || c == '=' || c == '<' || c == '>' || c == '.';
     }
 
-    private void procesarToken(String token, TokensJS tokenJS) throws ExceptionToken {
+    private void procesarToken(String token, TokensJS tokenJS) {
         if (tokenJS.esTokenValido(token)) {
             System.out.println("válido: " + token);
             tokenJS.setTexto(token);
+            tokenJS.setExpresionRegular(token);
             listaTokensJS.add(tokenJS);
         } else if (tokenJS.esComentario(token)) {
-            System.out.println("Comentariooooo: " + token);
+            System.out.println("valido: " + token);
             tokenJS.setTexto(token);
+            tokenJS.setExpresionRegular("//[a-zA-Z]|[0-9]|[.]");
+            tokenJS.setTipo("Comentario");
             listaTokensJS.add(tokenJS);
         } else if (tokenJS.esPalabraReservada(token)) {
             System.out.println("válido: " + token);
             tokenJS.setTexto(token);
+            tokenJS.setExpresionRegular(token);
+            tokenJS.setTipo("Palabra reservada");
             listaTokensJS.add(tokenJS);
         } else if (tokenJS.isValidInteger(token)) {
             System.out.println("válido: " + token);
             tokenJS.setTexto(token);
+            tokenJS.setExpresionRegular("[0-9]+");
+            tokenJS.setTipo("Entero");
             listaTokensJS.add(tokenJS);
         } else if (tokenJS.isValidFloat(token)) {
             System.out.println("válido: " + token);
             tokenJS.setTexto(token);
+            tokenJS.setExpresionRegular("[0-9]+.[0-9]+");
+            tokenJS.setTipo("Decimal");
             listaTokensJS.add(tokenJS);
         } else if (tokenJS.esCadena(token)) {
             System.out.println("válido: " + token);
             tokenJS.setTexto(token);
+            tokenJS.setExpresionRegular(token);
+            tokenJS.setTipo("Cadena");
             listaTokensJS.add(tokenJS);
         } else if (tokenJS.esIdentificadorValido(token)) {
             System.out.println("válido: " + token);
             tokenJS.setTexto(token);
+            tokenJS.setExpresionRegular("[a-zA-Z]([a-zA-Z]|[0-9]|[ _ ])*");
+            tokenJS.setTipo("Identificador");
             listaTokensJS.add(tokenJS);
         } else if (tokenJS.esCorchete(token)) {
             System.out.println("válido: " + token);
             tokenJS.setTexto(token);
+            tokenJS.setExpresionRegular(token);
+            tokenJS.setTipo("Corchete");
             listaTokensJS.add(tokenJS);
         } else if (tokenJS.esLlave(token)) {
             System.out.println("válido: " + token);
             tokenJS.setTexto(token);
+            tokenJS.setExpresionRegular(token);
+            tokenJS.setTipo("Llave");
             listaTokensJS.add(tokenJS);
         } else if (tokenJS.esParentesis(token)) {
             System.out.println("válido: " + token);
             tokenJS.setTexto(token);
+            tokenJS.setExpresionRegular(token);
+            tokenJS.setTipo("Parentesis");
             listaTokensJS.add(tokenJS);
         } else {
             TokenErrado tokenIn = new TokenErrado();
             tokenIn.setTexto(token);
             tokenIn.setLenguaje("JavaScript");
+            tokenIn.setLenguajeSugerido("JavaScript");
             listaTokenInvalido.add(tokenIn);
-            throw new ExceptionToken("Token invalido: " + token);
         }
+    }
+
+    public TokenDeEstado getTokenE() {
+        return tokenE;
+    }
+
+    public List<TokensJS> getListaTokensJS() {
+        return listaTokensJS;
+    }
+
+    public void setListaTokensJS(List<TokensJS> listaTokensJS) {
+        this.listaTokensJS = listaTokensJS;
     }
 
     public List<TokensCSS> getListaTokensCss() {
@@ -521,8 +588,20 @@ public class LectorTexto {
         return listaTokensHtml;
     }
 
-    private boolean esTextoValido() {
+    public boolean esTextoValido() {
         return listaTokenInvalido.isEmpty();
+    }
+
+    public List<String> getHtmlList() {
+        return htmlList;
+    }
+
+    public List<String> getCssList() {
+        return cssList;
+    }
+
+    public List<String> getJsList() {
+        return jsList;
     }
 
 }

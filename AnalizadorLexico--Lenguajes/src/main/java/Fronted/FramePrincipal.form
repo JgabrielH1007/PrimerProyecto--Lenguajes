@@ -19,6 +19,9 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="Reportes de Tokens"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="itemReportesTokenActionPerformed"/>
+              </Events>
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="itemReportesOpti">
               <Properties>
@@ -38,6 +41,9 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="Reporte de Errores"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="itemReporteErroresActionPerformed"/>
+              </Events>
             </MenuItem>
           </SubComponents>
         </Menu>
