@@ -10,7 +10,7 @@ import Backend.Token;
  *
  * @author gabrielh
  */
-public class TokensHTML extends Token{
+public class TokensHTML extends Token {
 
     private final String APERTURA = "<";
     private final String CIERRE = ">";
@@ -65,31 +65,64 @@ public class TokensHTML extends Token{
             contenido = contenido.substring(1).trim();  // Eliminar el '/'
         }
 
-        // Dividir el contenido en partes separadas por espacios
-        String[] partes = contenido.split("\\s+");
+        // Encontrar el nombre de la etiqueta (la primera palabra antes de los espacios)
+        int primerEspacio = contenido.indexOf(' ');
+        String nombreEtiqueta = primerEspacio == -1 ? contenido : contenido.substring(0, primerEspacio);
 
-        // La primera parte debe ser el nombre de la etiqueta, que debe ser válido
-        if (!esContenidoValido(partes[0])) {
+        // Validar si la primera parte es un nombre de etiqueta válido
+        if (!esContenidoValido(nombreEtiqueta)) {
             return false;
         }
 
         // Si es un token de cierre (por ejemplo, </contenedor>), debe tener solo el nombre de la etiqueta
-        if (esCierre && partes.length == 1) {
+        if (esCierre && primerEspacio == -1) {
             return true;
         }
 
-        // Validar las partes adicionales como atributos (ejemplo: class="container")
-        for (int i = 1; i < partes.length; i++) {
-            String[] atributo = partes[i].split("=");
+        // Si tiene más contenido, procesar los atributos
+        String atributos = primerEspacio == -1 ? "" : contenido.substring(primerEspacio + 1).trim();
 
-            // Un atributo válido tiene la forma nombre="valor"
-            if (atributo.length != 2 || !esPalabraReservada(atributo[0])) {
-                return false;
+        // Validar cada atributo en el formato nombre="valor"
+        int i = 0;
+        while (i < atributos.length()) {
+            // Encontrar el nombre del atributo hasta el '='
+            int igualIndex = atributos.indexOf('=', i);
+            if (igualIndex == -1) {
+                return false;  // No se encontró '=' en el atributo
             }
 
-            // El valor del atributo debe ser una cadena válida (ejemplo: "container")
-            if (!tokenCadena(atributo[1])) {
-                return false;
+            String nombreAtributo = atributos.substring(i, igualIndex).trim();
+            if (!esPalabraReservada(nombreAtributo)) {
+                return false;  // Atributo inválido
+            }
+
+            // Encontrar el valor del atributo entre comillas
+            int valorInicio = igualIndex + 1;
+            if (valorInicio >= atributos.length() || atributos.charAt(valorInicio) != '\"') {
+                return false;  // El valor no comienza con comillas
+            }
+
+            // Buscar el final del valor del atributo
+            int valorFin = valorInicio + 1;
+            while (valorFin < atributos.length() && atributos.charAt(valorFin) != '\"') {
+                valorFin++;
+            }
+
+            if (valorFin >= atributos.length() || atributos.charAt(valorFin) != '\"') {
+                return false;  // No se encontró la comilla de cierre
+            }
+
+            String valorAtributo = atributos.substring(valorInicio, valorFin + 1);
+            if (!tokenCadena(valorAtributo)) {
+                return false;  // El valor no es una cadena válida
+            }
+
+            // Avanzar el índice a la siguiente parte después del atributo
+            i = valorFin + 1;
+
+            // Saltar espacios en blanco entre atributos
+            while (i < atributos.length() && atributos.charAt(i) == ' ') {
+                i++;
             }
         }
 
@@ -119,6 +152,7 @@ public class TokensHTML extends Token{
     private boolean esPalabraReservada(String palabra) {
         for (String reservada : PALABRAS_RESERVADAS) {
             if (reservada.equals(palabra)) {
+                System.out.println(palabra);
                 return true;
             }
         }
@@ -177,8 +211,5 @@ public class TokensHTML extends Token{
     public void setColumna(int columna) {
         this.columna = columna;
     }
-    
-    
-    
 
 }

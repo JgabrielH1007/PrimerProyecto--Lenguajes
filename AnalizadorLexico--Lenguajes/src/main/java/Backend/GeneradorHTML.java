@@ -7,6 +7,7 @@ package Backend;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -40,7 +41,10 @@ public class GeneradorHTML {
         // Escribir el contenido en un archivo HTML
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("documentoLenguajes.html"))) {
             writer.write(htmlContent);
-            System.out.println("Archivo HTML generado correctamente.");
+            JOptionPane.showMessageDialog(null,
+                    "Exportación exitosa: reporte_optimizacion.html",
+                    "Éxito",
+                    JOptionPane.INFORMATION_MESSAGE);
         } catch (IOException e) {
             e.printStackTrace();
         }

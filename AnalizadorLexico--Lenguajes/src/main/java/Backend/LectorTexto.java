@@ -303,7 +303,7 @@ public class LectorTexto {
 
     private boolean esSeparador(char c) {
         // Definir caracteres que actúan como separadores
-        return c == ' ' || c == '\n' || c == '\t' || c == ':' || c == ';' || c == '{' || c == '}' || c == '(' || c == ')' || c == ',' || c == '*';
+        return c == ' ' || c == '\n' || c == '\t' || c == ':' || c == ';' || c == '{' || c == '}' || c == '(' || c == ')' || c == ',' || c == '*'||c=='%';
     }
 
     private void procesarTokenCSS(String token, TokensCSS tokenCSS){

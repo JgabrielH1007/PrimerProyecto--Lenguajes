@@ -55,7 +55,7 @@ public class ReporteTokens extends JFrame {
 
     @SuppressWarnings("unchecked")
     private void initComponents() {
-        setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
     }
 
     private void inicializarTabla() {

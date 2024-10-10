@@ -58,7 +58,7 @@ public class ReporteOptimizacion extends JFrame {
 
     @SuppressWarnings("unchecked")
     private void initComponents() {
-        setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
     }
 
     private void inicializarTabla() {
@@ -139,7 +139,7 @@ public class ReporteOptimizacion extends JFrame {
         // Escribir el HTML a un archivo
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("reporte_optimizacion.html"))) {
             writer.write(html.toString());
-            JOptionPane.showMessageDialog(this, "Exportación exitosa: reporte_tokens.html", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Exportación exitosa: reporte_optimizacion.html", "Éxito", JOptionPane.INFORMATION_MESSAGE);
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(this, "Error al exportar: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }

@@ -10,11 +10,11 @@ import Backend.Token;
  *
  * @author gabrielh
  */
-public class TokensCSS extends Token{
+public class TokensCSS extends Token {
 
     private String texto;
     private final String[] ETIQUETAS = {"body", "header", "main", "nav", "aside", "div", "ul", "ol", "li", "a", "h1",
-         "h2", "h3", "h4", "h5", "h6", "p", "span", "label", "textarea", "button", "section", "article", "footer"};
+        "h2", "h3", "h4", "h5", "h6", "p", "span", "label", "textarea", "button", "section", "article", "footer"};
     private final String[] COMBINADORES = {">", "+", " "};
     private final String[] REGLAS = {"color", "background-color", "background", "font-size", "font-weight", "font-family", "font-align", "width", "height", "min-width",
         "min-height", "max-width", "max-height", "display", "inline", "block", "inline-block", "flex", "grid", "none", "margin", "border", "padding",
@@ -116,14 +116,15 @@ public class TokensCSS extends Token{
     }
 
     public boolean esId(String token) {
+        // Verificar si el token es nulo, está vacío o no comienza con '#'
         if (token == null || token.isEmpty() || token.charAt(0) != '#') {
-            return false;  // Si el token es nulo, vacío o no empieza con '#', es inválido
+            return false;
         }
 
-        int i = 1; // Comenzar a revisar después del '#'
+        int i = 1; // Comenzar la verificación después del '#'
 
         // Verificar que el primer carácter después del '#' sea una letra minúscula
-        if (i >= token.length() || !isLowerCaseLetter(token.charAt(i))) {
+        if (i >= token.length() || !Character.isLowerCase(token.charAt(i))) {
             return false;
         }
         i++;
@@ -133,17 +134,17 @@ public class TokensCSS extends Token{
             char c = token.charAt(i);
 
             // Aceptar letras minúsculas, números y guiones
-            if (isLowerCaseLetter(c) || isDigit(c) || c == '-') {
+            if (Character.isLowerCase(c) || Character.isDigit(c) || c == '-' || Character.isUpperCase(c)) {
                 // Si es un guion, verificar que no esté al inicio, al final, o seguido de otro guion
                 if (c == '-') {
                     if (i == 1 || i == token.length() - 1 || token.charAt(i + 1) == '-') {
                         return false;  // Guiones consecutivos o en posiciones no válidas
                     }
                 }
-                i++;
             } else {
                 return false;  // Caracter inválido
             }
+            i++;
         }
 
         return true;

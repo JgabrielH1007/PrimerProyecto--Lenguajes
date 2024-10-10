@@ -10,4 +10,22 @@
         <maven.compiler.release>17</maven.compiler.release>
         <exec.mainClass>com.mycompany.analizadorlexico.lenguajes.AnalizadorLexicoLenguajes</exec.mainClass>
     </properties>
+     <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                            <mainClass>com.mycompany.analizadorlexico.lenguajes.AnalizadorLexicoLenguajes</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>    
+            </plugin>
+        </plugins>
+    </build>
 </project>
